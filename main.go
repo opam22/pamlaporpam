@@ -13,12 +13,22 @@ import (
 	gogpt "github.com/sashabaranov/go-gpt3"
 )
 
-const (
-	telegramtoken = ""
-	openaitoken   = ""
-)
-
 func main() {
+	err := godotenv.Load("local.env")
+	if err != nil {
+		log.Fatalf("Some error occured. Err: %s", err)
+	}
+
+	telegramtoken := os.Getenv("TELEGERAM_TOKEN")
+	if telegramtoken == "" {
+		panic("missing telegram token")
+	}
+
+	openaitoken := os.Getenv("OPENAI_TOKEN")
+	if openaitoken == "" {
+		panic("missing telegram token")
+	}
+
 	f, err := os.OpenFile("text.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		log.Println(err)
@@ -46,6 +56,17 @@ func main() {
 			logger.Println("===================================")
 			logger.Printf("From: %s", update.Message.From.UserName)
 			logger.Printf("Message: %s", update.Message.Text)
+
+			if strings.Contains(update.Message.Text, "/start") {
+				reply := "Tanya aja nanti gw jawab"
+				r := tgbotapi.NewMessage(update.Message.Chat.ID, reply)
+				r.ReplyToMessageID = update.Message.MessageID
+				bot.Send(r)
+				logger.Printf("Reply: %s END", reply)
+				logger.Println("===================================")
+				continue
+			}
+
 			g := update.Message.Chat.IsGroup()
 			sg := update.Message.Chat.IsSuperGroup()
 			if g || sg {
