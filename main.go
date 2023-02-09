@@ -47,7 +47,8 @@ func main() {
 			logger.Printf("From: %s", update.Message.From.UserName)
 			logger.Printf("Message: %s", update.Message.Text)
 			g := update.Message.Chat.IsGroup()
-			if g {
+			sg := update.Message.Chat.IsSuperGroup()
+			if g || sg {
 				if strings.Contains(update.Message.Text, "@PamLaporPamBot") {
 					if strings.Contains(update.Message.Text, "abangku") || strings.Contains(update.Message.Text, "abangqu") {
 						reply := "iya ol..."
