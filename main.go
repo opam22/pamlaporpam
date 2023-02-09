@@ -10,21 +10,26 @@ import (
 	"strings"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
+	"github.com/joho/godotenv"
 	gogpt "github.com/sashabaranov/go-gpt3"
 )
 
+var (
+	telegramtoken, openaitoken string
+)
+
 func main() {
-	err := godotenv.Load("local.env")
+	err := godotenv.Load("config.env")
 	if err != nil {
 		log.Fatalf("Some error occured. Err: %s", err)
 	}
 
-	telegramtoken := os.Getenv("TELEGERAM_TOKEN")
+	telegramtoken = os.Getenv("TELEGERAM_TOKEN")
 	if telegramtoken == "" {
 		panic("missing telegram token")
 	}
 
-	openaitoken := os.Getenv("OPENAI_TOKEN")
+	openaitoken = os.Getenv("OPENAI_TOKEN")
 	if openaitoken == "" {
 		panic("missing telegram token")
 	}
