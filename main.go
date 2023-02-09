@@ -48,32 +48,37 @@ func main() {
 			g := update.Message.Chat.IsGroup()
 			if g {
 				if strings.Contains(update.Message.Text, "@PamLaporPamBot") {
-					reply, err := callgpt(update.Message.Text)
-					if err != nil {
-						log.Println("callgpt error:", err.Error())
+					if strings.Contains(update.Message.Text, "abangku") || strings.Contains(update.Message.Text, "abangqu") {
+						reply := "iya ol..."
+						r := tgbotapi.NewMessage(update.Message.Chat.ID, reply)
+						r.ReplyToMessageID = update.Message.MessageID
+						bot.Send(r)
+						logger.Printf("Reply: %s END", reply)
+						logger.Println("===================================")
+					} else {
+						reply, err := callgpt(update.Message.Text)
+						if err != nil {
+							log.Println("callgpt error:", err.Error())
+						}
+						r := tgbotapi.NewMessage(update.Message.Chat.ID, reply)
+						r.ReplyToMessageID = update.Message.MessageID
+						bot.Send(r)
+						logger.Printf("Reply: %s END", reply)
+						logger.Println("===================================")
 					}
-					r := tgbotapi.NewMessage(update.Message.Chat.ID, reply)
-					r.ReplyToMessageID = update.Message.MessageID
-					bot.Send(r)
-					logger.Printf("Reply: %s END", reply)
-					logger.Println("===================================")
+
 				}
 			} else {
-				msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
-				msg.ReplyToMessageID = update.Message.MessageID
-
-				logger.Printf("Reply: %s END", msg.Text)
+				reply, err := callgpt(update.Message.Text)
+				if err != nil {
+					log.Println("callgpt error:", err.Error())
+				}
+				r := tgbotapi.NewMessage(update.Message.Chat.ID, reply)
+				r.ReplyToMessageID = update.Message.MessageID
+				bot.Send(r)
+				logger.Printf("Reply: %s END", reply)
 				logger.Println("===================================")
-				bot.Send(msg)
 			}
-
-			// reply, err := callgpt(msg.Text)
-			// if err != nil {
-			// 	log.Println("callgpt error:", err.Error())
-			// }
-			// r := tgbotapi.NewMessage(update.Message.Chat.ID, reply)
-			// r.ReplyToMessageID = update.Message.MessageID
-			// bot.Send(r)
 		}
 	}
 }
