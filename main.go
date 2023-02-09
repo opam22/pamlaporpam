@@ -43,6 +43,7 @@ func main() {
 	updates := bot.GetUpdatesChan(u)
 	for update := range updates {
 		if update.Message != nil {
+			logger.Println("===================================")
 			logger.Printf("From: %s", update.Message.From.UserName)
 			logger.Printf("Message: %s", update.Message.Text)
 			g := update.Message.Chat.IsGroup()
