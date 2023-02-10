@@ -1,17 +1,12 @@
 package main
 
 import (
-	"context"
-	"errors"
-	"fmt"
-	"io"
 	"log"
 	"os"
 	"strings"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/joho/godotenv"
-	gogpt "github.com/sashabaranov/go-gpt3"
 )
 
 var (
@@ -49,12 +44,14 @@ func main() {
 	}
 
 	bot.Debug = true
-
 	log.Printf("Authorized on account %s", bot.Self.UserName)
-
 	u := tgbotapi.NewUpdate(0)
 	u.Timeout = 60
 
+	// create instance for gpt
+	gpt := newGPT()
+
+	// wait for messages
 	updates := bot.GetUpdatesChan(u)
 	for update := range updates {
 		if update.Message != nil {
@@ -84,7 +81,7 @@ func main() {
 						logger.Printf("Reply: %s END", reply)
 						logger.Println("===================================")
 					} else {
-						reply, err := callgpt(update.Message.Text)
+						reply, err := gpt.call(update.Message.Text)
 						if err != nil {
 							log.Println("callgpt error:", err.Error())
 						}
@@ -97,7 +94,7 @@ func main() {
 
 				}
 			} else {
-				reply, err := callgpt(update.Message.Text)
+				reply, err := gpt.call(update.Message.Text)
 				if err != nil {
 					log.Println("callgpt error:", err.Error())
 				}
@@ -107,41 +104,6 @@ func main() {
 				logger.Printf("Reply: %s END", reply)
 				logger.Println("===================================")
 			}
-		}
-	}
-}
-
-func callgpt(msg string) (string, error) {
-	c := gogpt.NewClient(openaitoken)
-	ctx := context.Background()
-
-	req := gogpt.CompletionRequest{
-		Model:     gogpt.GPT3TextDavinci003,
-		MaxTokens: 500,
-		Prompt:    msg,
-		Stream:    true,
-	}
-	stream, err := c.CreateCompletionStream(ctx, req)
-	if err != nil {
-		return "", err
-	}
-	defer stream.Close()
-	var reply string
-	for {
-		response, err := stream.Recv()
-		if errors.Is(err, io.EOF) {
-			// log.Println("Stream finished")
-			// log.Println("reply: ", reply)
-			return reply, nil
-		}
-
-		if err != nil {
-			return "", err
-		}
-
-		for _, ch := range response.Choices {
-			// log.Println("loading ...", ch.Text)
-			reply = fmt.Sprintf("%s%s", reply, ch.Text)
 		}
 	}
 }
