@@ -24,10 +24,11 @@ func newGPT() *GPT {
 
 func (g *GPT) call(msg string) (string, error) {
 	req := gogpt.CompletionRequest{
-		Model:     gogpt.GPT3TextDavinci003,
-		MaxTokens: 500,
-		Prompt:    msg,
-		Stream:    true,
+		Model:       gogpt.GPT3TextDavinci003,
+		MaxTokens:   500,
+		Prompt:      msg,
+		Stream:      true,
+		Temperature: 0,
 	}
 	stream, err := g.c.CreateCompletionStream(g.ctx, req)
 	if err != nil {
