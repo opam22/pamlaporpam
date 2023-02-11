@@ -35,7 +35,7 @@ func main() {
 	}
 	defer f.Close()
 
-	logger := log.New(f, "prefix", log.LstdFlags)
+	logger := log.New(f, "pamlaporpam", log.LstdFlags)
 	logger.Println("===================================")
 
 	bot, err := tgbotapi.NewBotAPI(telegramtoken)
@@ -55,17 +55,11 @@ func main() {
 	updates := bot.GetUpdatesChan(u)
 	for update := range updates {
 		if update.Message != nil {
-			logger.Println("===================================")
-			logger.Printf("From: %s", update.Message.From.UserName)
-			logger.Printf("Message: %s", update.Message.Text)
-
 			if strings.Contains(update.Message.Text, "/start") {
-				reply := "Tanya aja nanti gw jawab"
-				r := tgbotapi.NewMessage(update.Message.Chat.ID, reply)
-				r.ReplyToMessageID = update.Message.MessageID
-				bot.Send(r)
-				logger.Printf("Reply: %s END", reply)
-				logger.Println("===================================")
+				replyMsg := "Tanya aja nanti gw jawab"
+				if err := reply(logger, bot, update.Message, replyMsg); err != nil {
+					logger.Printf("error: %v\n", err.Error())
+				}
 				continue
 			}
 
@@ -74,36 +68,50 @@ func main() {
 			if g || sg {
 				if strings.Contains(update.Message.Text, "@PamLaporPamBot") {
 					if strings.Contains(update.Message.Text, "abangku") || strings.Contains(update.Message.Text, "abangqu") {
-						reply := "iya ol..."
-						r := tgbotapi.NewMessage(update.Message.Chat.ID, reply)
-						r.ReplyToMessageID = update.Message.MessageID
-						bot.Send(r)
-						logger.Printf("Reply: %s END", reply)
-						logger.Println("===================================")
-					} else {
-						reply, err := gpt.call(update.Message.Text)
-						if err != nil {
-							log.Println("callgpt error:", err.Error())
+						replyMsg := "iya ol..."
+						if err := reply(logger, bot, update.Message, replyMsg); err != nil {
+							logger.Printf("error: %v\n", err.Error())
 						}
-						r := tgbotapi.NewMessage(update.Message.Chat.ID, reply)
-						r.ReplyToMessageID = update.Message.MessageID
-						bot.Send(r)
-						logger.Printf("Reply: %s END", reply)
-						logger.Println("===================================")
+					} else {
+						// this prompt require us to call openai gpt
+						replyMsg, err := gpt.call(update.Message.Text)
+						if err != nil {
+							logger.Printf("error: %v\n", err.Error())
+						}
+						if err := reply(logger, bot, update.Message, replyMsg); err != nil {
+							logger.Printf("error: %v\n", err.Error())
+						}
 					}
 
 				}
 			} else {
-				reply, err := gpt.call(update.Message.Text)
+				// this prompt require us to call openai gpt
+				replyMsg, err := gpt.call(update.Message.Text)
 				if err != nil {
-					log.Println("callgpt error:", err.Error())
+					logger.Printf("error: %v\n", err.Error())
 				}
-				r := tgbotapi.NewMessage(update.Message.Chat.ID, reply)
-				r.ReplyToMessageID = update.Message.MessageID
-				bot.Send(r)
-				logger.Printf("Reply: %s END", reply)
-				logger.Println("===================================")
+
+				if err := reply(logger, bot, update.Message, replyMsg); err != nil {
+					logger.Printf("error: %v\n", err.Error())
+				}
 			}
 		}
 	}
+}
+
+func reply(logger *log.Logger, bot *tgbotapi.BotAPI, message *tgbotapi.Message, replyMsg string) error {
+	r := tgbotapi.NewMessage(message.Chat.ID, replyMsg)
+	r.ReplyToMessageID = message.MessageID
+	if _, err := bot.Send(r); err != nil {
+		return err
+	}
+
+	// logging
+	logger.Println("===================================")
+	logger.Printf("From: %s", message.From.UserName)
+	logger.Printf("Message: %s", message.Text)
+	logger.Printf("Reply: %s END", replyMsg)
+	logger.Println("===================================")
+
+	return nil
 }
