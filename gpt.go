@@ -28,7 +28,7 @@ func (g *GPT) call(msg string) (string, error) {
 		MaxTokens:   500,
 		Prompt:      msg,
 		Stream:      true,
-		Temperature: 0,
+		Temperature: 0.5,
 	}
 	stream, err := g.c.CreateCompletionStream(g.ctx, req)
 	if err != nil {
