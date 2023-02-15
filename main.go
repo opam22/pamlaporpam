@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
@@ -10,7 +12,7 @@ import (
 )
 
 var (
-	telegramtoken, openaitoken string
+	telegramtoken string
 )
 
 func main() {
@@ -24,9 +26,29 @@ func main() {
 		panic("missing telegram token")
 	}
 
-	openaitoken = os.Getenv("OPENAI_TOKEN")
+	openaitoken := os.Getenv("OPENAI_TOKEN")
 	if openaitoken == "" {
 		panic("missing telegram token")
+	}
+
+	temperature := os.Getenv("TEMPERATURE")
+	if openaitoken == "" {
+		panic("missing temperature")
+	}
+	ftemp, err := strconv.ParseFloat(temperature, 32)
+	if err != nil {
+		panic(err)
+	}
+	f32temp := float32(ftemp)
+
+	maxToken := os.Getenv("MAX_TOKEN")
+	if openaitoken == "" {
+		panic("missing max_token")
+	}
+	imaxToken, err := strconv.Atoi(maxToken)
+	if err != nil {
+		fmt.Println(err)
+		return
 	}
 
 	f, err := os.OpenFile("text.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
@@ -49,7 +71,7 @@ func main() {
 	u.Timeout = 60
 
 	// create instance for gpt
-	gpt := newGPT()
+	gpt := newGPT(openaitoken, f32temp, imaxToken)
 
 	// wait for messages
 	updates := bot.GetUpdatesChan(u)
@@ -74,8 +96,18 @@ func main() {
 						}
 					} else {
 						// this prompt require us to call openai gpt
+
+						// send feedback first to user
+						if err := reply(logger, bot, update.Message, "oke sebentar..."); err != nil {
+							logger.Printf("error: %v\n", err.Error())
+						}
+
 						replyMsg, err := gpt.call(update.Message.Text)
-						if err != nil {
+						if err != nil || replyMsg == "" {
+							// gpt3 fail, send message to user
+							if err := reply(logger, bot, update.Message, "ntar aja dah lagi puyeng gua..."); err != nil {
+								logger.Printf("error: %v\n", err.Error())
+							}
 							logger.Printf("error: %v\n", err.Error())
 						}
 						if err := reply(logger, bot, update.Message, replyMsg); err != nil {
@@ -86,8 +118,18 @@ func main() {
 				}
 			} else {
 				// this prompt require us to call openai gpt
+
+				// send feedback first to user
+				if err := reply(logger, bot, update.Message, "oke sebentar..."); err != nil {
+					logger.Printf("error: %v\n", err.Error())
+				}
+
 				replyMsg, err := gpt.call(update.Message.Text)
-				if err != nil {
+				if err != nil || replyMsg == "" {
+					// gpt3 fail, send message to user
+					if err := reply(logger, bot, update.Message, "ntar aja dah lagi puyeng gua..."); err != nil {
+						logger.Printf("error: %v\n", err.Error())
+					}
 					logger.Printf("error: %v\n", err.Error())
 				}
 
