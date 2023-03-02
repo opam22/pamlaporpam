@@ -102,7 +102,7 @@ func main() {
 							logger.Printf("error: %v\n", err.Error())
 						}
 
-						replyMsg, err := gpt.call(update.Message.Text)
+						replyMsg, err := gpt.chatCompletion(update.Message.Text)
 						if err != nil || replyMsg == "" {
 							// gpt3 fail, send message to user
 							if err := reply(logger, bot, update.Message, "ntar aja dah lagi puyeng gua..."); err != nil {
@@ -124,7 +124,7 @@ func main() {
 					logger.Printf("error: %v\n", err.Error())
 				}
 
-				replyMsg, err := gpt.call(update.Message.Text)
+				replyMsg, err := gpt.chatCompletion(update.Message.Text)
 				if err != nil || replyMsg == "" {
 					// gpt3 fail, send message to user
 					if err := reply(logger, bot, update.Message, "ntar aja dah lagi puyeng gua..."); err != nil {
