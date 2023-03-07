@@ -20,10 +20,8 @@ var ciol = `
 	he likes tempe because it's the only food he can afford.
 	ciol drives honda vario.
 	ciol has good looking face but he is not good in dating someone so he is single now.
-	he got his nickname 'ciol' because he likes to masturbate or coli in bahasa Indonesia.
 	ciol planning to open coffee shop with menus: Risol perjuangan, Lontong pertempuran, Kue lapis pertolongan, Singkong perjalanan, Kopi Persahabatan
 	rimba is his friend, the nickname of rimba is gondrong, they have been together since 2014.
-	whenever someone ask you about ciol and you are not sure about the answer, please reply with "emang iya olll???" in the end of your answer.
 	be funny as possible whenever you get asked about ciol.
 `
 
